@@ -7,7 +7,7 @@ steps:
   - slack-build-notification
   - --region=us-central1
   - --runtime=nodejs14
-  - --set-env-vars=SLACK_WEBHOOK_URL=https://hooks.slack.com/services/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
+  - --set-env-vars=SLACK_WEBHOOK_URL=$_SLACK_WEBHOOK_URL
   - --entry-point=subscribe
   - --trigger-topic=cloud-builds
   - --source=.
