@@ -1,0 +1,13 @@
+steps:
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  args:
+  - gcloud
+  - functions
+  - deploy
+  - slack-build-notification
+  - --region=us-central1
+  - --runtime=nodejs14
+  - --set-env-vars=SLACK_WEBHOOK_URL=https://hooks.slack.com/services/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
+  - --entry-point=subscribe
+  - --trigger-topic=cloud-builds
+  - --source=.
