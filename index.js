@@ -1,5 +1,3 @@
-
-const dateFormat = require('dateformat');
 const { IncomingWebhook } = require('@slack/webhook');
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 // Read a url from the environment variables
@@ -28,24 +26,25 @@ const generateSlackMessage = (build) => {
     let shortSHA = build.substitutions.SHORT_SHA;
     let branchName = build.substitutions.BRANCH_NAME;
 
-    let state = `${build.projectId}\n`
+    let state = ''
     switch (build.status) {
         case 'SUCCESS':
-            state += ':white_check_mark: *SUCCESS*'
+            state += ':white_check_mark:'
             break;
         case 'WORKING':
-            state += ':construction: *WORKING*'
+            state += ':construction:'
             break;
         case 'FAILURE':
-            state += ':fire: *FAILURE*'
+            state += ':fire:'
             break;
     }
+    state += `CI/CD - ${build.projectId.toUpperCase()}`
 
     // This is not a repo
     if (repoName === undefined) {
-        let blah = `${state} \n`
+        state += '\n'
         for (const [key, value] of Object.entries(build.substitutions)) {
-            blah += `${key}: ${value}\n`;
+            state += `${key}:${value}, `;
         }
         return {
             text: "CI/CD",
@@ -56,7 +55,7 @@ const generateSlackMessage = (build) => {
                     type: 'section',
                     text: {
                         type: 'mrkdwn',
-                        text: blah,
+                        text: state,
                     },
                 }
             ]
@@ -68,11 +67,10 @@ const generateSlackMessage = (build) => {
         mrkdwn: true,
         blocks: [
             {
-
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `${state} \n${repoName} - <${build.logUrl}|${branchName}>:${shortSHA}`,
+                    text: `${state}\n${build.status.toLowerCase()} in build <${build.logUrl}|${build.id.split("-")[0]}> of ${repoName} - (${branchName}:${shortSHA})`,
                 },
             }
         ]
