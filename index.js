@@ -1,8 +1,5 @@
 const { IncomingWebhook } = require('@slack/webhook');
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
-const GITHUB_URL = process.env.GITHUB_URL;
-const GITHUB_PR_NUMBER = process.env.GITHUB_PR_NUMBER;
-console.log(GITHUB_URL, GITHUB_PR_NUMBER)
 // Read a url from the environment variables
 
 // Initialize
@@ -45,7 +42,7 @@ const generateSlackMessage = (build) => {
             state += ':fire:'
             break;
     }
-    state += `CI/CD - ${build.projectId.toUpperCase()}`
+    state += ` CI/CD - ${build.projectId.toUpperCase()}`
 
     // This is not a repo
     // if (repoName === undefined) {
@@ -70,6 +67,7 @@ const generateSlackMessage = (build) => {
     //     }
     // }
 
+    let repoURL = `https://github.com/MiSalud-AI/${repoName}/commits/${branchName}`
     return {
         text: "CI/CD",
         mrkdwn: true,
@@ -78,7 +76,7 @@ const generateSlackMessage = (build) => {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `${state}\n${build.status.toLowerCase()} in build <${build.logUrl}|#${build.id.split("-")[0]}> of ${repoName} - (${branchName}:${shortSHA})`,
+                    text: `${state}\n${build.status.toLowerCase()} in build <${build.logUrl}|#${build.id.split("-")[0]}> of ${repoName} - (<${repoURL}|${branchName}:${shortSHA}>)`,
                 },
             }
         ]
