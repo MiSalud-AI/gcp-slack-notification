@@ -31,13 +31,13 @@ const generateSlackMessage = (build) => {
     let state = `${build.projectId}\n`
     switch (build.status) {
         case 'SUCCESS':
-            state = ':white_check_mark: *SUCCESS*'
+            state += ':white_check_mark: *SUCCESS*'
             break;
         case 'WORKING':
-            state = ':construction: *WORKING*'
+            state += ':construction: *WORKING*'
             break;
         case 'FAILURE':
-            state = ':fire: *FAILURE*'
+            state += ':fire: *FAILURE*'
             break;
     }
 
