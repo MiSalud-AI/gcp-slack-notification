@@ -30,26 +30,40 @@ const generateSlackMessage = (build) => {
     let shortSHA = build.substitutions.SHORT_SHA;
     let branchName = build.substitutions.BRANCH_NAME;
 
-    let state = ''
+    // add status emoji
+    let msg = ''
     switch (build.status) {
         case 'SUCCESS':
-            state += ':white_check_mark:'
+            msg += ':white_check_mark:'
             break;
         case 'WORKING':
-            state += ':construction:'
+            msg += ':construction:'
             break;
         case 'FAILURE':
-            state += ':fire:'
+            msg += ':fire:'
             break;
     }
-    state += ` CI/CD - ${build.projectId.toUpperCase()}`
+
+    // TODO: get build type (pr or deploy)
+
+    msg += ` CI/CD - `
+    // add environment name
+    if (build.projectId.toLowerCase().includes("development")) {
+        msg += "DEVELOPMENT"
+    } else if (build.projectId.toLowerCase().includes("qa")) {
+        msg += "QA"
+    } else if (build.projectId.toLowerCase().includes("stage")) {
+        msg += "STAGE"
+    } else {
+        msg += "PRODUCTION"
+    }
 
     // This is not a repo
     // if (repoName === undefined) {
     //     return
-    //     state += '\n'
+    //     msg += '\n'
     //     for (const [key, value] of Object.entries(build.substitutions)) {
-    //         state += `${key}:${value}, `;
+    //         msg += `${key}:${value}, `;
     //     }
     //     return {
     //         text: "CI/CD",
@@ -60,7 +74,7 @@ const generateSlackMessage = (build) => {
     //                 type: 'section',
     //                 text: {
     //                     type: 'mrkdwn',
-    //                     text: state,
+    //                     text: msg,
     //                 },
     //             }
     //         ]
@@ -76,7 +90,7 @@ const generateSlackMessage = (build) => {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `${state}\n${build.status.toLowerCase()} in build <${build.logUrl}|#${build.id.split("-")[0]}> of ${repoName} - (<${repoURL}|${branchName}:${shortSHA}>)`,
+                    text: `${msg}\n${build.status.toLowerCase()} in build <${build.logUrl}|#${build.id.split("-")[0]}> of ${repoName} - (<${repoURL}|${branchName}:${shortSHA}>)`,
                 },
             }
         ]
