@@ -12,7 +12,6 @@ exports.subscribe = pubsubMessage => {
     const build = JSON.parse(Buffer.from(pubsubMessage.data, 'base64').toString());
     if (build.status === 'WORKING' || build.status === 'SUCCESS' || build.status === 'FAILURE') {
         const message = generateSlackMessage(build);
-        // console.log(`slack message ${message}`);
         (async () => {
             try {
                 console.log(`build info ${JSON.stringify(build)}`);
@@ -29,8 +28,7 @@ const generateSlackMessage = (build) => {
     let shortSHA = build.substitutions.SHORT_SHA;
     let branchName = build.substitutions.BRANCH_NAME;
 
-
-    let state = ""
+    let state = `${build.projectId}\n`
     switch (build.status) {
         case 'SUCCESS':
             state = ':white_check_mark: *SUCCESS*'
