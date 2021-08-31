@@ -1,5 +1,8 @@
 const { IncomingWebhook } = require('@slack/webhook');
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
+const GITHUB_URL = process.env.GITHUB_URL;
+const GITHUB_PR_NUMBER = process.env.GITHUB_PR_NUMBER;
+console.log(GITHUB_URL, GITHUB_PR_NUMBER)
 // Read a url from the environment variables
 
 // Initialize
@@ -23,6 +26,10 @@ exports.subscribe = pubsubMessage => {
 
 const generateSlackMessage = (build) => {
     let repoName = build.substitutions.REPO_NAME;
+    // ignore none ci/cd builds
+    if (repoName === undefined) {
+        return
+    }
     let shortSHA = build.substitutions.SHORT_SHA;
     let branchName = build.substitutions.BRANCH_NAME;
 
@@ -41,26 +48,27 @@ const generateSlackMessage = (build) => {
     state += `CI/CD - ${build.projectId.toUpperCase()}`
 
     // This is not a repo
-    if (repoName === undefined) {
-        state += '\n'
-        for (const [key, value] of Object.entries(build.substitutions)) {
-            state += `${key}:${value}, `;
-        }
-        return {
-            text: "CI/CD",
-            mrkdwn: true,
-            blocks: [
-                {
+    // if (repoName === undefined) {
+    //     return
+    //     state += '\n'
+    //     for (const [key, value] of Object.entries(build.substitutions)) {
+    //         state += `${key}:${value}, `;
+    //     }
+    //     return {
+    //         text: "CI/CD",
+    //         mrkdwn: true,
+    //         blocks: [
+    //             {
 
-                    type: 'section',
-                    text: {
-                        type: 'mrkdwn',
-                        text: state,
-                    },
-                }
-            ]
-        }
-    }
+    //                 type: 'section',
+    //                 text: {
+    //                     type: 'mrkdwn',
+    //                     text: state,
+    //                 },
+    //             }
+    //         ]
+    //     }
+    // }
 
     return {
         text: "CI/CD",
@@ -70,7 +78,7 @@ const generateSlackMessage = (build) => {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `${state}\n${build.status.toLowerCase()} in build <${build.logUrl}|${build.id.split("-")[0]}> of ${repoName} - (${branchName}:${shortSHA})`,
+                    text: `${state}\n${build.status.toLowerCase()} in build <${build.logUrl}|#${build.id.split("-")[0]}> of ${repoName} - (${branchName}:${shortSHA})`,
                 },
             }
         ]
