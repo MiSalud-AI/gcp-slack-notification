@@ -1,89 +1,82 @@
-const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
-const FRONTEND_REPO_NAME = proces.env.FRONTEND_REPO_NAME;
-const BACKEND_REPO_NAME = proces.env.BACKEND_REPO_NAME;
 
 const dateFormat = require('dateformat');
-const IncomingWebhook = require('@slack/client').IncomingWebhook;
+const { IncomingWebhook } = require('@slack/webhook');
+const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
+// Read a url from the environment variables
+
+// Initialize
 const webhook = new IncomingWebhook(SLACK_WEBHOOK_URL);
 
-module.exports.subscribe = (event, callback) => {
-    const build = JSON.parse(new Buffer(event.data, 'base64').toString());
-    if (build.status === 'SUCCESS' || build.status === 'FAILURE') {
+exports.subscribe = pubsubMessage => {
+    // Print out the data from Pub/Sub, to prove that it worked
+    const build = JSON.parse(Buffer.from(pubsubMessage.data, 'base64').toString());
+    if (build.status === 'WORKING' || build.status === 'SUCCESS' || build.status === 'FAILURE') {
         const message = generateSlackMessage(build);
-        webhook.send(message, callback);
-    } else {
-        console.log(`build status ${build.status}`);
-        console.log(`build info ${JSON.stringify(build)}`);
+        // console.log(`slack message ${message}`);
+        (async () => {
+            try {
+                console.log(`build info ${JSON.stringify(build)}`);
+                await webhook.send(message);
+            } catch (err) {
+                console.log(err); // TypeError: failed to fetch
+            }
+        })();
     }
-};
+}
 
 const generateSlackMessage = (build) => {
+    let repoName = build.substitutions.REPO_NAME;
+    let shortSHA = build.substitutions.SHORT_SHA;
+    let branchName = build.substitutions.BRANCH_NAME;
 
-    let repoName = 'UNKOWN REPONAME';
 
-    if (build.source.repoSource.repoName === FRONTEND_REPO_NAME) repoName = "Frontend";
-    if (build.source.repoSource.repoName === BACKEND_REPO_NAME) repoName = "Backend";
-
-    let environment = 'UNKOWN BRANCH'
-
-    if (build.source.repoSource.branchName === 'develop') environment = 'development';
-    if (build.source.repoSource.branchName === 'master') environment = 'production';
-
-    let fields = []
-
-    /** time to deployment */
-
-    const startTime = dateFormat(build.startTime, "h:MM:ss TT");
-    const finishTime = dateFormat(build.finishTime, "h:MM:ss TT");
-    const timeDifference = timeDiff(build.startTime, build.finishTime);
-
-    let deployment_time_field = {
-        title: 'deployment time: ',
-        value: `${startTime} -> ${finishTime} (${timeDifference})`
+    let state = ""
+    switch (build.status) {
+        case 'SUCCESS':
+            state = ':white_check_mark: *SUCCESS*'
+            break;
+        case 'WORKING':
+            state = ':construction: *WORKING*'
+            break;
+        case 'FAILURE':
+            state = ':fire: *FAILURE*'
+            break;
     }
 
-    fields.push(deployment_time_field)
+    // This is not a repo
+    if (repoName === undefined) {
+        let blah = `${state} \n`
+        for (const [key, value] of Object.entries(build.substitutions)) {
+            blah += `${key}: ${value}\n`;
+        }
+        return {
+            text: "CI/CD",
+            mrkdwn: true,
+            blocks: [
+                {
 
-    /** build steps */
-    let deployment_step_fields = generateStepTimes(build.steps)
+                    type: 'section',
+                    text: {
+                        type: 'mrkdwn',
+                        text: blah,
+                    },
+                }
+            ]
+        }
+    }
 
-    fields = fields.concat(deployment_step_fields)
-
-    let message = {
-        text: `\`${build.status}\` ${repoName} to ${environment} environment`,
+    return {
+        text: "CI/CD",
         mrkdwn: true,
-        attachments: [
+        blocks: [
             {
-                title: `build id ${build.id}`,
-                title_link: build.logUrl,
-                fields: fields
+
+                type: 'section',
+                text: {
+                    type: 'mrkdwn',
+                    text: `${state} \n${repoName} - <${build.logUrl}|${branchName}>:${shortSHA}`,
+                },
             }
         ]
-    };
-
-    return message
-}
-
-const generateStepTimes = (steps) => {
-    stepTimes = [];
-    steps.forEach((step) => {
-        if (step.status === 'SUCCESS') {
-            stepTimes.push({
-                title: `${step.id}`,
-                value: `\`${step.status}\` -> \`${timeDiff(step.timing.startTime, step.timing.endTime)}\``
-            })
-        } else {
-            stepTimes.push({
-                title: `${step.id}`,
-                value: `\`${step.status}\``
-            })
-        }
-    })
-    return stepTimes;
-}
-
-const timeDiff = (startTime, finishTime) => {
-    let diff = new Date(finishTime) - new Date(startTime);
-    if (diff > 60e3) return `${Math.floor(diff / 60e3)} minutes`
-    else return `${Math.floor(diff / 1e3)} seconds`
+    }
 }
