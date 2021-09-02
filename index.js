@@ -9,10 +9,10 @@ exports.subscribe = pubsubMessage => {
     // Print out the data from Pub/Sub, to prove that it worked
     const build = JSON.parse(Buffer.from(pubsubMessage.data, 'base64').toString());
     if (build.status === 'WORKING' || build.status === 'SUCCESS' || build.status === 'FAILURE') {
+        console.log(`build info ${JSON.stringify(build)}`);
         const message = generateSlackMessage(build);
         (async () => {
             try {
-                console.log(`build info ${JSON.stringify(build)}`);
                 await webhook.send(message);
             } catch (err) {
                 console.log(err); // TypeError: failed to fetch
@@ -34,7 +34,7 @@ const generateSlackMessage = (build) => {
     let msg = ''
     switch (build.status) {
         case 'SUCCESS':
-            msg += ':white_check_mark:'
+            msg += ':gh-green:'
             break;
         case 'WORKING':
             msg += ':construction:'
