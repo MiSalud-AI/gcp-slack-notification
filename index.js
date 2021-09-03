@@ -70,7 +70,7 @@ const generateSlackMessage = (build) => {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `${msg}\n${status} in build <${build.logUrl}|${triggerName}:${buildId}> of ${repoName} - (<${repoURL}|${branchName}:${shortSHA}>)`,
+                    text: `${msg}\nBuild ${triggerName} <${build.logUrl}|#${buildId}> (<${repoURL}|${branchName}:${shortSHA}>)`,
                 },
             }
         ]
