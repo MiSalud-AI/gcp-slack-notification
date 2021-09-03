@@ -27,70 +27,50 @@ const generateSlackMessage = (build) => {
     if (repoName === undefined) {
         return
     }
+    let triggerName = build.substitutions.TRIGGER_NAME;
     let shortSHA = build.substitutions.SHORT_SHA;
     let branchName = build.substitutions.BRANCH_NAME;
+    let projectId = build.projectId.toLowerCase();
+    let status = build.status.toLowerCase();
+    let buildId = build.id.split("-")[0];
 
     // add status emoji
     let msg = ''
-    switch (build.status) {
-        case 'SUCCESS':
+    switch (status) {
+        case 'success':
             msg += ':gh-green:'
             break;
-        case 'WORKING':
+        case 'working':
             msg += ':construction:'
             break;
-        case 'FAILURE':
+        case 'failure':
             msg += ':fire:'
             break;
     }
 
     // TODO: get build type (pr or deploy)
 
-    msg += ` CI/CD - `
+    msg += ` DEPLOY - `
     // add environment name
-    if (build.projectId.toLowerCase().includes("development")) {
+    if (projectId.includes("development")) {
         msg += "DEVELOPMENT"
-    } else if (build.projectId.toLowerCase().includes("qa")) {
+    } else if (projectId.includes("qa")) {
         msg += "QA"
-    } else if (build.projectId.toLowerCase().includes("stage")) {
+    } else if (projectId.includes("stage")) {
         msg += "STAGE"
     } else {
         msg += "PRODUCTION"
     }
 
-    // This is not a repo
-    // if (repoName === undefined) {
-    //     return
-    //     msg += '\n'
-    //     for (const [key, value] of Object.entries(build.substitutions)) {
-    //         msg += `${key}:${value}, `;
-    //     }
-    //     return {
-    //         text: "CI/CD",
-    //         mrkdwn: true,
-    //         blocks: [
-    //             {
-
-    //                 type: 'section',
-    //                 text: {
-    //                     type: 'mrkdwn',
-    //                     text: msg,
-    //                 },
-    //             }
-    //         ]
-    //     }
-    // }
-
     let repoURL = `https://github.com/MiSalud-AI/${repoName}/commits/${branchName}`
     return {
-        text: "CI/CD",
         mrkdwn: true,
         blocks: [
             {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `${msg}\n${build.status.toLowerCase()} in build <${build.logUrl}|#${build.id.split("-")[0]}> of ${repoName} - (<${repoURL}|${branchName}:${shortSHA}>)`,
+                    text: `${msg}\n${status} in build <${build.logUrl}|${triggerName}:${buildId}> of ${repoName} - (<${repoURL}|${branchName}:${shortSHA}>)`,
                 },
             }
         ]
