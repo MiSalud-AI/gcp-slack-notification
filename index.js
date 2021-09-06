@@ -30,6 +30,7 @@ const generateSlackMessage = (build) => {
     let triggerName = build.substitutions.TRIGGER_NAME;
     let shortSHA = build.substitutions.SHORT_SHA;
     let branchName = build.substitutions.BRANCH_NAME;
+    let tagName = build.substitutions.TAG_NAME;
     let projectId = build.projectId.toLowerCase();
     let status = build.status.toLowerCase();
     let buildId = build.id.split("-")[0];
@@ -62,7 +63,16 @@ const generateSlackMessage = (build) => {
         msg += "PRODUCTION"
     }
 
-    let repoURL = `https://github.com/MiSalud-AI/${repoName}/commits/${branchName}`
+    let gitURL
+    let gitText
+    if (tagName == undefined) {
+        gitURL = `https://github.com/MiSalud-AI/${repoName}/commits/${branchName}`
+        gitText = `${branchName}:${shortSHA}`
+    } else {
+        gitURL = `https://github.com/MiSalud-AI/${repoName}/releases/tag/${tagName}`
+        gitText = `${tagName}`
+    }
+
     return {
         mrkdwn: true,
         blocks: [
@@ -70,7 +80,7 @@ const generateSlackMessage = (build) => {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `${msg}\nBuild ${triggerName} <${build.logUrl}|#${buildId}> (<${repoURL}|${branchName}:${shortSHA}>)`,
+                    text: `${msg}\nBuild ${triggerName} <${build.logUrl}|#${buildId}> (<${gitURL}|${gitText}>)`,
                 },
             }
         ]
