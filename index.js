@@ -8,7 +8,7 @@ const webhook = new IncomingWebhook(SLACK_WEBHOOK_URL);
 exports.subscribe = pubsubMessage => {
     // Print out the data from Pub/Sub, to prove that it worked
     const build = JSON.parse(Buffer.from(pubsubMessage.data, 'base64').toString());
-    if (build.status === 'WORKING' || build.status === 'SUCCESS' || build.status === 'FAILURE') {
+    if (build.status === 'WORKING' || build.status === 'SUCCESS' || build.status === 'FAILURE' || build.status === 'CANCELLED') {
         console.log(`build info ${JSON.stringify(build)}`);
         const message = generateSlackMessage(build);
         (async () => {
@@ -18,6 +18,8 @@ exports.subscribe = pubsubMessage => {
                 console.log(err); // TypeError: failed to fetch
             }
         })();
+    } else {
+        console.log(`build unknown status type ${JSON.stringify(build)}`);
     }
 }
 
@@ -46,6 +48,9 @@ const generateSlackMessage = (build) => {
             break;
         case 'failure':
             msg += ':fire:'
+            break;
+        case 'cancelled':
+            msg += ':heavy_multiplication_x:'
             break;
     }
 
