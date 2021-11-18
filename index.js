@@ -60,6 +60,8 @@ const generateSlackMessage = (build) => {
     // add environment name
     if (projectId.includes("development")) {
         msg += "DEVELOPMENT"
+    } else if (projectId.includes("qa2")) {
+        msg += "QA2"
     } else if (projectId.includes("qa")) {
         msg += "QA" + (triggerName.includes("-2") ? "2" : "1" ) // requested by luca
     } else if (projectId.includes("stage")) {
