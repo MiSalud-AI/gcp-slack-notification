@@ -53,12 +53,12 @@ const generateSecretSlackMessage = (secretId, secretMetadata) => {
     // add environment name
     if (secretMetadata.name.includes("363532665815")) {
         msg += "DEVELOPMENT"
-    } else if (secretMetadata.name.includes("671385210864")) {
-        msg += "QA2"
     } else if (secretMetadata.name.includes("997717717493")) {
-        msg += "QA1"
+        msg += "QA"
     } else if (secretMetadata.name.includes("834589263806")) {
         msg += "STAGE"
+    } else if (secretMetadata.name.includes("805659935052")) {
+        msg += "DEMO"
     } else {
         msg += "PRODUCTION"
     }
@@ -127,9 +127,11 @@ const generateSlackMessage = (build) => {
     } else if (projectId.includes("qa2")) {
         msg += "QA2"
     } else if (projectId.includes("qa")) {
-        msg += "QA1"
+        msg += "QA" + (triggerName.includes("-2") ? "2" : triggerName.includes("-3") ? "3" : "1" ) // requested by luca
     } else if (projectId.includes("stage")) {
         msg += "STAGE"
+    } else if (projectId.includes("demo")) {
+        msg += "DEMO"
     } else {
         msg += "PRODUCTION"
     }
