@@ -124,10 +124,10 @@ const generateSlackMessage = (build) => {
     // add environment name
     if (projectId.includes("development")) {
         msg += "DEVELOPMENT"
-    } else if (projectId.includes("qa2")) {
-        msg += "QA2"
+    } else if (triggerName.includes("sandbox")) {
+        msg += "SANDBOX"
     } else if (projectId.includes("qa")) {
-        msg += "QA" + (triggerName.includes("-2") ? "2" : triggerName.includes("-3") ? "3" : "1" ) // requested by luca
+        msg += "QA" + (triggerName.includes("-2") ? "2" : triggerName.includes("-3") ? "3" : triggerName.includes("-4") ? "4" : "1" ) // requested by luca
     } else if (projectId.includes("stage")) {
         msg += "STAGE"
     } else if (projectId.includes("demo")) {
