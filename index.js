@@ -6,7 +6,7 @@ const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 const webhook = new IncomingWebhook(SLACK_WEBHOOK_URL);
 
 exports.subscribe = pubsubMessage => {
-    if (pubsubMessage.attributes.buildId){
+    if (pubsubMessage.attributes.buildId) {
         // Print out the data from Pub/Sub, to prove that it worked
         const build = JSON.parse(Buffer.from(pubsubMessage.data, 'base64').toString());
         if (build.status === 'WORKING' || build.status === 'SUCCESS' || build.status === 'FAILURE' || build.status === 'CANCELLED') {
@@ -127,7 +127,9 @@ const generateSlackMessage = (build) => {
     } else if (triggerName.includes("sandbox")) {
         msg += "SANDBOX"
     } else if (projectId.includes("qa")) {
-        msg += "QA" + (triggerName.includes("-2") ? "2" : triggerName.includes("-3") ? "3" : triggerName.includes("-4") ? "4" : "1" ) // requested by luca
+        msg += "QA" + (triggerName.includes("-2") ? "2" : triggerName.includes("-3") ? "3" : triggerName.includes("-4") ? "4" : "1") // requested by luca
+    } else if (projectId.includes("test")) {
+        msg += "TEST" + (triggerName.includes("-2") ? "2" : triggerName.includes("-3") ? "3" : triggerName.includes("-4") ? "4" : "1") // requested by luca
     } else if (projectId.includes("stage")) {
         msg += "STAGE"
     } else if (projectId.includes("demo")) {
